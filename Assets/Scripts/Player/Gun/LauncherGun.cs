@@ -57,9 +57,9 @@ namespace Player.Gun
                 if (objectToLaunch)
                 {
                     var direction = pov.transform.forward * launchForce;
-                    if (direction.y is < 18.0f and > -4.0f)
+                    if (direction.y is < 22.0f and > -10.0f)
                     {
-                        direction.y = 18.0f;
+                        direction.y = 22.0f;
                     }
                     objectToLaunch.GetComponent<Rigidbody>().AddForce(direction, ForceMode.VelocityChange);
                     
