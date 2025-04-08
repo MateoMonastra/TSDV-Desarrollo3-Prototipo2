@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 503d7d128429edf43a1c945a38afbc64, type: 3}
   m_Name: RunningModel
   m_EditorClassIdentifier: 
-  speed: 14
+  speed: 28
   acceleration: 10
   brakeMultiplier: 0.75
   airMultiplier: 0.05

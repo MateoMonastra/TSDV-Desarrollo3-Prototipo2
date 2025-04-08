@@ -2,6 +2,7 @@ using System;
 using Player.Gun;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace Player.Movement.FSM
 {
@@ -81,6 +82,16 @@ namespace Player.Movement.FSM
             {
                 grab._attempToCatch = false;
             }
+        }
+        
+        public void ExitPrototype(InputAction.CallbackContext context)
+        {
+            Application.Quit();
+        }
+        
+        public void ReloadScene(InputAction.CallbackContext context)
+        {
+            SceneManager.LoadScene("GunSandBox");
         }
 
     }
