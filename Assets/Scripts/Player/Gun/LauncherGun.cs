@@ -3,97 +3,115 @@ using UnityEngine;
 
 namespace Player.Gun
 {
-    public class LauncherGun : MonoBehaviour
+public class LauncherGun : MonoBehaviour
+{
+    [Header("Fuerza")]
+    [SerializeField] private float minLaunchForce = 5f;
+    [SerializeField] public float maxLaunchForce = 20f;
+    [SerializeField] private float launchUpgrade = 10f;
+
+    [Header("Cooldown")]
+    [SerializeField] private float shootCooldown = 1f;
+    
+    [Header("Referencia camara")]
+    [SerializeField] private GameObject pov;
+
+    public float launchForce;
+    private float _coolDownTimer;
+    public bool isShooting;
+    public bool isUpgrading;
+    public GameObject objectToLaunch;
+
+    private Rigidbody _rb;
+    private GroundCheck _groundCheck;
+
+    private void Start()
     {
-        [SerializeField] private float minLaunchForce;
-        [SerializeField] public float maxLaunchForce;
-        [SerializeField] private float launchUpgrade;
-        [SerializeField] private float shootCooldown;
-        [SerializeField] private GameObject pov;
+        _rb = GetComponentInChildren<Rigidbody>();
+        _groundCheck = GetComponentInChildren<GroundCheck>();
+        launchForce = minLaunchForce;
+    }
 
+    public void ResetValue()
+    {
+        isUpgrading = true;
+    }
 
-        public float launchForce;
-        private float _coolDownTimer;
-        public bool isShooting;
-        public bool isUpgrading;
-        public GameObject objectToLaunch;
-
-        private Rigidbody _rb;
-        private GroundCheck _groundCheck;
-
-// Start is called before the first frame update
-        private void Start()
+    private void UpgradeValue()
+    {
+        if (launchForce < maxLaunchForce)
         {
-            _rb = GetComponentInChildren<Rigidbody>();
-            _groundCheck = GetComponentInChildren<GroundCheck>();
-        }
-
-        public void ResetValue()
-        {
-            isUpgrading = true;
-        }
-
-        private void UpgradeValue()
-        {
-            if (!(launchForce < maxLaunchForce)) return;
-
             launchForce += launchUpgrade * Time.deltaTime;
-
-            if (launchForce > maxLaunchForce)
-            {
-                launchForce = maxLaunchForce;
-            }
-        }
-
-        private void Launch()
-        {
-            if (_groundCheck.IsOnGround())
-            {
-                var oppositeDirection = -pov.transform.forward;
-                _rb.AddForce(oppositeDirection * launchForce, ForceMode.Impulse);
-            }
-            else
-            {
-                if (objectToLaunch)
-                {
-                    var direction = pov.transform.forward * launchForce;
-                    if (direction.y is < 22.0f and > -10.0f)
-                    {
-                        direction.y = 22.0f;
-                    }
-                    objectToLaunch.GetComponent<Rigidbody>().AddForce(direction, ForceMode.VelocityChange);
-                    
-                    objectToLaunch = null;
-
-                    Debug.Log(direction);
-                    Debug.Log("Shooted");
-                }
-            }
-
-            _coolDownTimer = 0;
-            isShooting = false;
-            launchForce = minLaunchForce;
-        }
-
-        private void Update()
-        {
-            if (shootCooldown > _coolDownTimer)
-            {
-                _coolDownTimer += Time.deltaTime;
-            }
-
-            if (isUpgrading)
-            {
-                UpgradeValue();
-            }
-        }
-
-        private void FixedUpdate()
-        {
-            if (shootCooldown < _coolDownTimer && isShooting)
-            {
-                Launch();
-            }
+            launchForce = Mathf.Min(launchForce, maxLaunchForce);
         }
     }
+
+    private void Launch()
+    {
+        Vector3 launchDirection = pov.transform.forward;
+        
+        if (launchDirection.y < -0.1f)
+        {
+            launchDirection.y = 0; 
+            launchDirection.Normalize();
+        }
+
+        if (_groundCheck.IsOnGround())
+        {
+            
+            Vector3 force = -launchDirection * launchForce;
+            
+            if (force.y < 0.5f)
+            {
+                force.y = 0.5f * launchForce;
+            }
+
+            _rb.AddForce(force, ForceMode.VelocityChange);
+        }
+        else if (objectToLaunch)
+        {
+            var rb = objectToLaunch.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.AddForce(launchDirection * launchForce, ForceMode.VelocityChange);
+                
+                Vector3 force = -launchDirection * launchForce;
+
+                _rb.AddForce(force, ForceMode.Impulse);
+            }
+
+            Debug.Log($"Direction: {launchDirection}, Force: {launchForce}");
+            Debug.Log("Shooted");
+
+            objectToLaunch = null;
+        }
+
+        // Reset estado
+        _coolDownTimer = 0;
+        isShooting = false;
+        launchForce = minLaunchForce;
+    }
+
+    private void Update()
+    {
+        if (_coolDownTimer < shootCooldown)
+        {
+            _coolDownTimer += Time.deltaTime;
+        }
+
+        if (isUpgrading)
+        {
+            UpgradeValue();
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (_coolDownTimer >= shootCooldown && isShooting)
+        {
+            Launch();
+        }
+    }
+}
+
 }

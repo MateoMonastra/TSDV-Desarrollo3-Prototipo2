@@ -1267,7 +1267,7 @@ MonoBehaviour:
   maxLaunchForce: 45
   launchUpgrade: 30
   shootCooldown: 1
-  pov: {fileID: 1382694844}
+  pov: {fileID: 963194225}
   launchForce: 0
   isShooting: 0
   isUpgrading: 0
